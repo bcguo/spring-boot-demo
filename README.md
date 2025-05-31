@@ -68,10 +68,10 @@ curl http://localhost:8080/
 
 # Get personalized greeting
 curl http://localhost:8080/hello?name=YourName
-```
+
 # Get JSON greeting
 curl http://localhost:8080/greeting?name=YourName
-
+```
 
 ### More Detailed Examples
 
