@@ -18,7 +18,9 @@ spring-boot-demo/
 │   ├── main/
 │   │   ├── java/              # Application source code
 │   │   │   └── org/example/springbootdemo/
-│   │   │       ├── HelloController.java        # REST controller with greeting endpoints
+│   │   │       ├── Greeting.java           # Greeting data model
+│   │   │       ├── GreetingController.java # REST controller for greeting endpoint
+│   │   │       ├── HelloController.java    # REST controller with greeting endpoints
 │   │   │       └── SpringBootDemoApplication.java  # Application entry point
 │   │   └── resources/
 │   │       └── application.properties  # Spring Boot configuration
@@ -67,6 +69,9 @@ curl http://localhost:8080/
 # Get personalized greeting
 curl http://localhost:8080/hello?name=YourName
 ```
+# Get JSON greeting
+curl http://localhost:8080/greeting?name=YourName
+
 
 ### More Detailed Examples
 
@@ -86,6 +91,12 @@ curl http://localhost:8080/hello?name=John
 ```bash
 curl http://localhost:8080/hello
 # Response: "Hello, World!"
+```
+
+4. Using the greeting endpoint for JSON response:
+```bash
+curl http://localhost:8080/greeting?name=John
+# Response: {"id":1,"content":"Hello, John!"}
 ```
 
 ### Troubleshooting
@@ -121,16 +132,19 @@ logging.level.org.springframework=DEBUG
 The application follows a simple request-response flow for handling HTTP requests.
 
 ```ascii
-Client Request -> HelloController -> Response
-     │                 │               │
-     └─► GET /        │               │
-     └─► GET /hello   └─► Process ────┘
+Client Request         -> Controller -> Response
+     │                                        │
+     ├─► GET /                                │
+     ├─► GET /hello    -> HelloController ────┤
+     │                                        │
+     └─► GET /greeting -> GreetingController ─┘
 ```
 
 Component interactions:
 1. Client sends HTTP GET request to either "/" or "/hello" endpoint
-2. HelloController processes the request
+2. HelloController or GreetingController processes the request
 3. For "/hello" endpoint, name parameter is extracted from query string
 4. Controller generates appropriate greeting message
-5. Response is serialized and sent back to client
-6. Spring Boot Actuator monitors the request/response cycle
+5. For "/greeting" endpoint, response includes a unique ID and message in JSON format
+6. Response is serialized and sent back to client
+7. Spring Boot Actuator monitors the request/response cycle
