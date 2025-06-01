@@ -99,6 +99,33 @@ curl http://localhost:8080/greeting?name=John
 # Response: {"id":1,"content":"Hello, John!"}
 ```
 
+### Running on Local Minikube Kubernetes Cluster
+1. Build the image
+```bash
+docker build -t spring-boot-demo .
+```
+
+2. Load the image into Minikube
+```bash
+docker save spring-boot-demo > spring-boot-demo.tar
+minikube start
+minikube image load spring-boot-demo.tar
+# minikube image ls
+# ...
+# localhost/spring-boot-demo:local
+```
+
+3. Create the deployment
+```bash
+kubectl apply -f deployment.yaml
+# deployment.apps/spring-boot-demo created
+```
+
+4. Retrieve the Minikube tunnel URL for testing
+```bash
+minikube service spring-boot-demo --url
+```
+
 ### Troubleshooting
 
 1. Application fails to start
