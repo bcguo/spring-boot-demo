@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto24
+    commands:
+      - java -version
+
+  build:
+    commands:
+      - ./gradlew bootBuildImage --no-daemon
+      - docker images
