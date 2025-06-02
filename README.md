@@ -1,42 +1,33 @@
-# Spring Boot Demo: A Simple RESTful Web Service with Gradle
+# Spring Boot Demo: A RESTful Web Service with Docker and Kubernetes Support
 
-A Spring Boot application that demonstrates how to create a basic RESTful web service with endpoints for greeting users. The project showcases Spring Boot's auto-configuration capabilities and includes comprehensive testing infrastructure.
+This project demonstrates a Spring Boot application that provides RESTful endpoints with Docker containerization and Kubernetes deployment support. It showcases modern Java development practices with comprehensive testing and cloud-native deployment capabilities.
 
-This project serves as a practical example of Spring Boot application development, featuring:
-- RESTful endpoint implementation with Spring MVC
-- Gradle-based build configuration and dependency management
-- Comprehensive test coverage with unit and integration tests
-- Spring Boot Actuator for application monitoring
-- Java 24 toolchain support
+The application implements a simple greeting service with health monitoring through Spring Actuator. It is built using Java 24 and Spring Boot 3.5.0, providing a foundation for building production-ready services. The project includes Docker containerization using Amazon Corretto JDK and Kubernetes deployment configurations, making it suitable for cloud deployments.
 
 ## Repository Structure
 ```
 spring-boot-demo/
-├── build.gradle                 # Gradle build configuration with Spring Boot dependencies
-├── gradle/wrapper/             # Gradle wrapper for consistent builds
-├── src/
-│   ├── main/
-│   │   ├── java/              # Application source code
-│   │   │   └── org/example/springbootdemo/
-│   │   │       ├── Greeting.java           # Greeting data model
-│   │   │       ├── GreetingController.java # REST controller for greeting endpoint
-│   │   │       ├── HelloController.java    # REST controller with greeting endpoints
-│   │   │       └── SpringBootDemoApplication.java  # Application entry point
-│   │   └── resources/
-│   │       └── application.properties  # Spring Boot configuration
-│   └── test/
-│       └── java/              # Test source code
-│           └── org/example/springbootdemo/
-│               ├── HelloControllerITest.java    # Integration tests
-│               ├── HelloControllerTest.java     # Unit tests
-│               └── SpringBootDemoApplicationTests.java  # Application context tests
+├── src/                           # Source code directory
+│   ├── main/java                  # Application source code
+│   │   └── org/example/springbootdemo
+│   │       ├── Greeting.java              # Data model for greeting response
+│   │       ├── GreetingController.java    # REST controller for greeting endpoint
+│   │       ├── HelloController.java       # REST controller for hello endpoints
+│   │       └── SpringBootDemoApplication.java # Application entry point
+│   └── test/                     # Test source code
+├── gradle/                       # Gradle wrapper configuration
+├── deployment.yaml              # Kubernetes deployment configuration
+├── Dockerfile                   # Docker image configuration
+├── build.gradle                 # Gradle build configuration
+└── buildspec.yml               # AWS CodeBuild configuration
 ```
 
 ## Usage Instructions
 ### Prerequisites
-- Java Development Kit (JDK) 24 or later
-- Gradle (optional, wrapper included)
-- An IDE with Spring Boot support (recommended)
+- Java Development Kit (JDK) 24
+- Gradle 8.x (included via wrapper)
+- Docker (for containerization)
+- Kubernetes cluster (for deployment)
 
 ### Installation
 
@@ -46,7 +37,7 @@ git clone https://github.com/bcguo/spring-boot-demo.git
 cd spring-boot-demo
 ```
 
-2. Build the project:
+2. Build the application:
 ```bash
 # For Unix-like systems
 ./gradlew build
@@ -55,8 +46,13 @@ cd spring-boot-demo
 gradlew.bat build
 ```
 
+3. Build Docker image:
+```bash
+./gradlew bootBuildImage
+```
+
 ### Quick Start
-1. Run the application:
+1. Run the application locally:
 ```bash
 ./gradlew bootRun
 ```
@@ -74,7 +70,6 @@ curl http://localhost:8080/greeting?name=YourName
 ```
 
 ### More Detailed Examples
-
 1. Using the root endpoint:
 ```bash
 curl http://localhost:8080/
@@ -97,6 +92,11 @@ curl http://localhost:8080/hello
 ```bash
 curl http://localhost:8080/greeting?name=John
 # Response: {"id":1,"content":"Hello, John!"}
+```
+
+5. Docker deployment:
+```bash
+docker run -p 8080:8080 bcguo/spring-boot-demo:latest
 ```
 
 ### Running on Local Minikube Kubernetes Cluster
@@ -155,23 +155,51 @@ logging.level.org.springframework=DEBUG
 ./gradlew wrapper --gradle-version 8.5
 ```
 
+3. Docker image build fails
+- Ensure Docker daemon is running
+- Check Docker build logs: `docker build -t spring-boot-demo .`
+- Verify Dockerfile paths are correct
+
+4. Kubernetes deployment issues
+- Verify cluster connection: `kubectl cluster-info`
+- Check pod status: `kubectl get pods`
+- View pod logs: `kubectl logs deployment/spring-boot-demo`
+
 ## Data Flow
-The application follows a simple request-response flow for handling HTTP requests.
+The application processes HTTP requests through a simple request-response flow, implementing RESTful endpoints for greeting services.
 
 ```ascii
-Client Request         -> Controller -> Response
-     │                                        │
-     ├─► GET /                                │
-     ├─► GET /hello    -> HelloController ────┤
-     │                                        │
-     └─► GET /greeting -> GreetingController ─┘
+Client Request -> Spring Boot Controller -> Response Generation -> Client Response
+     |                    |                        |                    |
+   HTTP               Routing &              Data Processing        JSON Response
+  Request          Authentication           & State Management        Generation
 ```
 
 Component interactions:
-1. Client sends HTTP GET request to either "/" or "/hello" endpoint
-2. HelloController or GreetingController processes the request
-3. For "/hello" endpoint, name parameter is extracted from query string
-4. Controller generates appropriate greeting message
-5. For "/greeting" endpoint, response includes a unique ID and message in JSON format
-6. Response is serialized and sent back to client
-7. Spring Boot Actuator monitors the request/response cycle
+1. Client sends HTTP request to endpoints (/, /hello, or /greeting)
+2. Spring Boot routes request to appropriate controller
+3. Controller processes request parameters
+4. Response is generated with appropriate content type
+5. Spring Boot serializes response to JSON
+6. Response is sent back to client
+
+## Infrastructure
+
+![Infrastructure diagram](./docs/infra.svg)
+The application is containerized and deployed using the following resources:
+
+Docker:
+- Base Image: amazoncorretto:24-alpine-jdk
+- Exposed Port: 8080
+- Security: Runs as non-root user 'spring'
+
+Kubernetes:
+- Deployment: spring-boot-demo
+- Replicas: 1
+- Container Image: localhost/bcguo/spring-boot-demo:latest
+- Pull Policy: Never
+
+AWS CodeBuild:
+- Runtime: Java Corretto 24
+- Build Steps: Gradle build and Docker image creation
+- Artifact: Docker image pushed to ECR

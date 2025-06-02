@@ -1,0 +1,7 @@
+digraph INFRA {
+  node [ color = "black", fillcolor = "#E6E6E6", height =1, style = "filled,bold,rounded", fontname = "Arial" ];
+  "spring-boot-demo" [ label = "spring-boot-demo
+(Kubernetes::Deployment)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "spring-boot-demo-container" [ label = "spring-boot-demo-container
+(Docker::Container)", shape =rectangle, fillcolor = "#B7E0FF" ];
+}
