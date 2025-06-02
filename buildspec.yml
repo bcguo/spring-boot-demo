@@ -13,7 +13,7 @@ phases:
 
   build:
     commands:
-      - ./gradlew bootBuildImage --no-daemon
+      - ./gradlew bootBuildImage --no-daemon --imagePlatform $IMAGE_PLATFORM
       - docker images
 
   post_build:
