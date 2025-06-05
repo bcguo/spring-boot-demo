@@ -14,5 +14,6 @@ spec:
     spec:
       containers:
         - name: spring-boot-demo
-          image: localhost/bcguo/spring-boot-demo:latest
-          imagePullPolicy: Never
+          image: ${IMAGE_REPO}:${IMAGE_TAG}
+          ports:
+            - containerPort: 8080
