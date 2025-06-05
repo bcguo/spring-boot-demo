@@ -20,3 +20,8 @@ phases:
     commands:
       - docker tag bcguo/spring-boot-demo:latest $IMAGE_REPO:$IMAGE_TAG
       - docker push $IMAGE_REPO:$IMAGE_TAG
+      - envsubst < k8s-deployment.yaml > k8s-deployment.yaml
+
+artifacts:
+  files:
+    - k8s-deployment.yaml
