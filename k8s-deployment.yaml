@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: spring-boot-demo
-          image: ${IMAGE_REPO}:${CODEBUILD_BUILD_ID}
+          image: ${IMAGE_REPO}:${IMAGE_TAG}
           ports:
             - containerPort: 8080

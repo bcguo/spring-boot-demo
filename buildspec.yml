@@ -10,6 +10,7 @@ phases:
     commands:
       - export AWS_ACCOUNT_ID=$(echo $CODEBUILD_PROJECT_ARN | cut -d ':' -f 5)
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - export IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID | awk -F":" '{print $2}')
 
   build:
     commands:
@@ -18,10 +19,10 @@ phases:
 
   post_build:
     commands:
-      - docker tag bcguo/spring-boot-demo:latest $IMAGE_REPO:$CODEBUILD_BUILD_ID
+      - docker tag bcguo/spring-boot-demo:latest $IMAGE_REPO:$IMAGE_TAG
       - docker tag bcguo/spring-boot-demo:latest $IMAGE_REPO:latest
       - docker push $IMAGE_REPO:latest
-      - docker push $IMAGE_REPO:$CODEBUILD_BUILD_ID
+      - docker push $IMAGE_REPO:$IMAGE_TAG
       - envsubst < k8s-deployment.yaml > k8s-deployment_subst.yaml
 
 artifacts:
